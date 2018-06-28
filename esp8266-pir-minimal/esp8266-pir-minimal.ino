@@ -1,6 +1,6 @@
 void setup() {
-  pinMode(D0, OUTPUT);
-  digitalWrite(D0, HIGH);
+  pinMode(D5, OUTPUT);
+  digitalWrite(D5, LOW);
   attachInterrupt(digitalPinToInterrupt(D2), IntCallback, CHANGE);
 }
 
@@ -10,7 +10,7 @@ void loop() {
 void IntCallback()
 {
   if (digitalRead(D2) == HIGH) 
-    digitalWrite(D0, LOW);
+    digitalWrite(D5, HIGH);
   else 
-    digitalWrite(D0, HIGH);
+    digitalWrite(D5, LOW);
 }
