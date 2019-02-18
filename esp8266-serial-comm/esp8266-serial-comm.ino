@@ -1,5 +1,7 @@
 #include <ESP8266WiFi.h>
+#include <ESP8266HTTPClient.h>
 #include <PubSubClient.h>
+#include <ArduinoJson.h>
 
 #define READ_BUF_SIZE 256
 
@@ -13,6 +15,7 @@ const char* mqttPassword = "*";
  
 WiFiClient espClient;
 PubSubClient client(espClient);
+HTTPClient http;
  
 void setup() {
  
@@ -38,12 +41,12 @@ void connectIfNeeded() {
   }
   
   while (!client.connected()) {
-    Serial.println("Connecting to MQTT...");
+    Serial.print("Connecting to MQTT...");
     if (client.connect("ESP8266Client", mqttUser, mqttPassword )) {
-      Serial.println("connected");  
+      Serial.println(" Connected");  
     } else {
-      Serial.print("failed with state ");
-      Serial.print(client.state());
+      Serial.print(" Failed with state ");
+      Serial.println(client.state());
       delay(2000);
     }
   }
@@ -68,6 +71,26 @@ void loop() {
     Serial.readBytesUntil('\n', buffer, incomingByte);
     client.publish("test/hello", buffer);
   }
-  delay(100);
-}
 
+  // get data over rest
+  http.begin("http://*:19999/api/v1/data?chart=system.uptime&after=-1");
+  http.GET();
+  String payload = http.getString();
+  DynamicJsonBuffer  jsonBuffer(200);
+  JsonObject& root = jsonBuffer.parseObject(payload);
+  if (!root.success()) {
+    Serial.println("parseObject() failed");
+    return;
+  }
+
+  int uptime_secs_t = root["data"][0][1];
+  int uptime_hours = uptime_secs_t / 60 / 60;
+  int uptime_mins = (uptime_secs_t - uptime_hours * 60 * 60) / 60;
+  int uptime_secs = (uptime_secs_t - uptime_hours * 60 * 60 - uptime_mins * 60);
+  
+  char buf[256];
+  sprintf(buf, "Uptime: %0d:%0d:%0d", uptime_hours, uptime_mins, uptime_secs);
+  Serial.println(buf);
+  
+  delay(1000);
+}
