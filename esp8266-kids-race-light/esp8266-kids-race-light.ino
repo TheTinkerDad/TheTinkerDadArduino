@@ -11,30 +11,37 @@ void setup() {
   pinMode(D4, OUTPUT);
   digitalWrite(D4, LOW);
   
+  pinMode(D5, OUTPUT);
+  digitalWrite(D5, LOW);
 }
 
 void loop() {
+
+  noTone(D5);
+  
   digitalWrite(D2, HIGH);
   digitalWrite(D3, LOW);
   digitalWrite(D4, LOW);
 
-  delay ( 12000 );
+  delay ( 5000 );
 
-  digitalWrite(D2, HIGH);
-  digitalWrite(D3, HIGH);
+  digitalWrite(D2, LOW);
+  digitalWrite(D3, LOW);
   digitalWrite(D4, LOW);
 
-  delay ( 2000 );
+  for (int i = 0; i < 3; i++) {
+    tone(D5, 261, 500);
+    digitalWrite(D3, HIGH);
+    delay ( 500 );
+    digitalWrite(D3, LOW);
+    delay ( 500 );
+  }
 
   digitalWrite(D2, LOW);
   digitalWrite(D3, LOW);
   digitalWrite(D4, HIGH);
 
+  tone(D5,261, 1000);
+
   delay ( 18000 );
-
-  digitalWrite(D2, LOW);
-  digitalWrite(D3, HIGH);
-  digitalWrite(D4, LOW);
-
-  delay ( 3000 );
 }
