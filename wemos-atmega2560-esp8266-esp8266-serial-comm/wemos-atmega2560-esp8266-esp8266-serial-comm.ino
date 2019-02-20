@@ -82,7 +82,7 @@ void loop() {
   int uptime_secs = (uptime_secs_t - uptime_hours * 60 * 60 - uptime_mins * 60);
   
   char buf[256];
-  sprintf(buf, "Uptime: %0d:%0d:%0d", uptime_hours, uptime_mins, uptime_secs);
+  sprintf(buf, ">Uptime: %0d:%0d:%0d<", uptime_hours, uptime_mins, uptime_secs);
   Serial.println(buf);
   
   delay(1000);
