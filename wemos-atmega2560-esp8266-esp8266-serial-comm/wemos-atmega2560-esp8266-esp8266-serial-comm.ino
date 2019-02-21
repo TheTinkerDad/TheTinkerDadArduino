@@ -26,19 +26,21 @@ void connectIfNeeded() {
   }
 }
 
-void loop() {
-
-  connectIfNeeded();
-
+JsonObject& getJson(const char * url) {
+  
   // get data over rest - repeat this for whatever endpoints you want to fetch and display
-  http.begin(NETDATA_URL);
+  http.begin(url);
   http.GET();
   String payload = http.getString();
-  DynamicJsonBuffer  jsonBuffer(200);
-  JsonObject& root = jsonBuffer.parseObject(payload);
+  DynamicJsonBuffer jsonBuffer(200);
+  return jsonBuffer.parseObject(payload);
+}
+
+char * getUpTime(const char * url) {
+  
+  JsonObject& root = getJson(url);
   if (!root.success()) {
-    Serial.println(">Service unavailable!<");
-    return;
+    return ">Service unavailable!<";
   }
 
   int uptime_secs_t = root["data"][0][1];
@@ -48,7 +50,31 @@ void loop() {
   
   char buf[256];
   sprintf(buf, ">Uptime: %0d:%0d:%0d<", uptime_hours, uptime_mins, uptime_secs);
-  Serial.println(buf);
+  return buf;
+}
+
+char * getCPUUsage(const char * url) {
+  
+  JsonObject& root = getJson(url);
+  if (!root.success()) {
+    return ">Service unavailable!<";
+  }
+
+  // TODO: Parse and return!
+  float value = 0.0;
+  
+  char buf[32];
+  sprintf(buf, ">CPU: %00d%%<", value);
+  return buf;
+}
+
+
+void loop() {
+
+  connectIfNeeded();
+
+  Serial.println(getUpTime(NETDATA_URL_UPTIME));
+  //Serial.println(getCPUUsage(NETDATA_URL_CPU));
   
   delay(1000);
 }
