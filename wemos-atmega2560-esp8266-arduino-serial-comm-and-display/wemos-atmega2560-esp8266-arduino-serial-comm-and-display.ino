@@ -20,6 +20,7 @@ MCUFRIEND_kbv tft;
 int16_t font_size, lines; 
 char mainbuffer[MAIN_BUF_SIZE];
 char buffer[READ_BUF_SIZE];
+int currentLine = 0;
 
 void setup() {
 
@@ -43,6 +44,21 @@ void setup() {
 
   memset(mainbuffer, 0, MAIN_BUF_SIZE);
 }
+
+bool startsWith(const char *str, const char *pre) {
+    return strncmp(pre, str, strlen(pre)) == 0;
+}
+
+struct UpdatePacket {
+  int marker1;
+  long uptime;
+  float cpu;
+  float ram1;
+  float ram2;
+  float ram3;
+  float ram4;
+  int marker2;
+};
  
 void loop(void) {
 
@@ -50,27 +66,29 @@ void loop(void) {
   int incomingByte = 0;
 
   if ((incomingByte = Serial3.available()) > 0) {
-    memset(buffer, 0, READ_BUF_SIZE);
-    Serial3.readBytesUntil('\n', buffer, incomingByte);
+    
+    struct UpdatePacket up;
+    
+    Serial3.readBytes((uint8_t *)&up, sizeof(up));
 
-    // Process the data we've received, even if it's partial
-    for (int i = 0; buffer[i] != NULL; i++){
-      // New data line
-      if (buffer[i] == '>') {
-        memset(mainbuffer, 0, MAIN_BUF_SIZE);
+    Serial.print(up.marker1);
+    Serial.print(" ");
+    Serial.print(up.marker2);
 
-      // Finished data line
-      } else if (buffer[i] == '<') {
-        //tft.fillRect(0, 0, tft.width(), FONT_HEIGHT, BLACK);
-        tft.setCursor(0, 0);
-        tft.setTextColor(GREEN, BLACK);
-        tft.println(mainbuffer);
+    if (up.marker1 == 123 && up.marker2 == 321) {
+      tft.setCursor(0, FONT_HEIGHT * (currentLine++) + 1);
+      tft.setTextColor(GREEN, BLACK);
 
-      // Within data line
-      } else {
-        mainbuffer[strlen(mainbuffer)] = buffer[i];
-      }
+      // CPU
+      char float_tmp[7];
+      dtostrf(up.cpu, 3, 2, float_tmp);
+      char * buf = (char*)malloc(sizeof(char) * 32);
+      strcpy(buf, ">CPU: ");
+      strcat(buf, float_tmp);
+      strcat(buf, "%<");
+      
+      tft.println(buf);
     }
   }
-  delay(100);
+  delay(2000);
 }
