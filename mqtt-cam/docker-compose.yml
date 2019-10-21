@@ -1,0 +1,18 @@
+version: '3.2'
+
+volumes:
+  mqtt-ar-data:
+
+services:
+  mqtt-autorecorder:
+    image: damaniac82/mqtt-autorecorder:latest
+    volumes:
+      - mqtt-ar-data:/data
+    environment:
+      - STREAMURL=*
+      - MQTTHOST=*
+      - MQTTPORT=1883
+      - MQTTUSER=*
+      - MQTTPASS=*
+      - MQTTTOPIC=hello
+
